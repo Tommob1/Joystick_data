@@ -1,21 +1,41 @@
-import pyvjoy
+import hid
 
-def test_joystick():
+# Replace these values with your device's VID and PID
+VID = 0x046D  # Logitech Vendor ID
+PID = 0xC215  # Extreme 3D Pro Product ID (replace if needed)
+
+def list_hid_devices():
+    """
+    Lists all connected HID devices.
+    """
+    print("Listing all HID devices:")
+    for device in hid.enumerate():
+        print(f"VID: {hex(device['vendor_id'])}, PID: {hex(device['product_id'])}, Product: {device['product_string']}")
+
+def read_joystick_data():
+    """
+    Reads raw input data from the Logitech Extreme 3D Pro joystick.
+    """
+    print(f"\nConnecting to device: VID={hex(VID)}, PID={hex(PID)}")
     try:
-        j = pyvjoy.VJoyDevice(1)  # Reference vJoy Device 1
-        print("vJoy device initialized. Ready to read joystick input.")
+        # Open the HID device
+        joystick = hid.device()
+        joystick.open(VID, PID)
+        print(f"Connected to {joystick.get_product_string()}")
 
+        print("Listening for joystick input... Move the stick or press buttons. (Ctrl+C to exit)\n")
         while True:
-            # Example: Map the joystick's X-axis and Y-axis to vJoy axes
-            j.set_axis(pyvjoy.HID_USAGE_X, 0x4000)  # Set X-Axis halfway
-            j.set_axis(pyvjoy.HID_USAGE_Y, 0x4000)  # Set Y-Axis halfway
-            
-            # Example: Simulate a button press
-            j.set_button(1, 1)  # Press button 1
-            print("Simulating joystick input. Press Ctrl+C to stop.")
-            
+            data = joystick.read(64)  # Read 64-byte HID input report
+            if data:
+                print(f"Raw Data: {data}")
     except KeyboardInterrupt:
-        print("Exiting vJoy test.")
+        print("\nExiting...")
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        joystick.close()
+        print("Joystick connection closed.")
 
 if __name__ == "__main__":
-    test_joystick()
+    list_hid_devices()
+    read_joystick_data()
