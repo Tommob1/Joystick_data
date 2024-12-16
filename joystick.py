@@ -32,7 +32,7 @@ def read_joystick_data(device):
 
         print("Reading joystick data. Press Ctrl+C to exit.")
         while True:
-            pass  # Keep the script running to receive data
+            pass
     except KeyboardInterrupt:
         print("\nExiting...")
     finally:
