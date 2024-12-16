@@ -1,47 +1,21 @@
-import pywinusb.hid as hid
+import pyvjoy
 
-def find_joystick():
-    """
-    Finds the first connected joystick and returns its HID device.
-    """
-    all_devices = hid.find_all_hid_devices()
-    if not all_devices:
-        print("No HID devices found.")
-        return None
-
-    for device in all_devices:
-        if "joystick" in device.product_name.lower():
-            print(f"Joystick found: {device.product_name}")
-            print(f"Vendor ID: {device.vendor_id}, Product ID: {device.product_id}")
-            return device
-
-    print("No joystick device found.")
-    return None
-
-def read_joystick_data(device):
-    """
-    Reads and prints input data from the joystick.
-    """
+def test_joystick():
     try:
-        device.open()
+        j = pyvjoy.VJoyDevice(1)  # Reference vJoy Device 1
+        print("vJoy device initialized. Ready to read joystick input.")
 
-        def raw_data_handler(data):
-            print(f"Raw Data: {data}")
-
-        device.set_raw_data_handler(raw_data_handler)
-
-        print("Reading joystick data. Press Ctrl+C to exit.")
         while True:
-            pass
+            # Example: Map the joystick's X-axis and Y-axis to vJoy axes
+            j.set_axis(pyvjoy.HID_USAGE_X, 0x4000)  # Set X-Axis halfway
+            j.set_axis(pyvjoy.HID_USAGE_Y, 0x4000)  # Set Y-Axis halfway
+            
+            # Example: Simulate a button press
+            j.set_button(1, 1)  # Press button 1
+            print("Simulating joystick input. Press Ctrl+C to stop.")
+            
     except KeyboardInterrupt:
-        print("\nExiting...")
-    finally:
-        device.close()
-
-def main():
-    device = find_joystick()
-    if device:
-        read_joystick_data(device)
+        print("Exiting vJoy test.")
 
 if __name__ == "__main__":
-    main()
+    test_joystick()
