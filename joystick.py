@@ -1,63 +1,47 @@
-import pygame
-import sys
-import time
+import pywinusb.hid as hid
 
-def initialize_joystick():
+def find_joystick():
     """
-    Initializes the joystick and ensures hardware is connected.
-    Returns the joystick object if successful.
+    Finds the first connected joystick and returns its HID device.
     """
-    # Initialize Pygame and the joystick module
-    pygame.init()
-    pygame.joystick.init()
+    all_devices = hid.find_all_hid_devices()
+    if not all_devices:
+        print("No HID devices found.")
+        return None
 
-    # Check for connected joysticks
-    joystick_count = pygame.joystick.get_count()
-    if joystick_count == 0:
-        print("Error: No joystick detected. Please connect a joystick and restart.")
-        pygame.quit()
-        sys.exit()
+    for device in all_devices:
+        if "joystick" in device.product_name.lower():
+            print(f"Joystick found: {device.product_name}")
+            print(f"Vendor ID: {device.vendor_id}, Product ID: {device.product_id}")
+            return device
 
-    # Initialize the first joystick
-    joystick = pygame.joystick.Joystick(0)
-    joystick.init()
+    print("No joystick device found.")
+    return None
 
-    print(f"Joystick detected: {joystick.get_name()}")
-    print(f"Number of axes: {joystick.get_numaxes()}")
-    print(f"Number of buttons: {joystick.get_numbuttons()}")
-    print(f"Number of hats (D-pad): {joystick.get_numhats()}")
-
-    return joystick
-
-def read_joystick_data(joystick):
+def read_joystick_data(device):
     """
-    Reads data from the joystick and prints it to the console.
+    Reads and prints input data from the joystick.
     """
     try:
-        print("\nPolling joystick data. Press Ctrl+C to exit.")
+        device.open()
+
+        def raw_data_handler(data):
+            print(f"Raw Data: {data}")
+
+        device.set_raw_data_handler(raw_data_handler)
+
+        print("Reading joystick data. Press Ctrl+C to exit.")
         while True:
-            # Process Pygame events
-            for event in pygame.event.get():
-                if event.type == pygame.JOYAXISMOTION:
-                    axis_value = joystick.get_axis(event.axis)
-                    print(f"Axis {event.axis} moved to {axis_value:.2f}")
-                elif event.type == pygame.JOYBUTTONDOWN:
-                    print(f"Button {event.button} pressed")
-                elif event.type == pygame.JOYBUTTONUP:
-                    print(f"Button {event.button} released")
-                elif event.type == pygame.JOYHATMOTION:
-                    print(f"Hat {event.hat} moved to {joystick.get_hat(event.hat)}")
-            time.sleep(0.01)  # Reduce CPU usage
+            pass  # Keep the script running to receive data
     except KeyboardInterrupt:
         print("\nExiting...")
+    finally:
+        device.close()
 
 def main():
-    try:
-        joystick = initialize_joystick()
-        read_joystick_data(joystick)
-    finally:
-        pygame.quit()
-        print("Pygame quit. Cleanup complete.")
+    device = find_joystick()
+    if device:
+        read_joystick_data(device)
 
 if __name__ == "__main__":
     main()
