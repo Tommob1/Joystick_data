@@ -1,8 +1,7 @@
 import hid
 
-# Replace these values with your device's VID and PID
-VID = 0x046D  # Logitech Vendor ID
-PID = 0xC215  # Extreme 3D Pro Product ID (replace if needed)
+VID = 0x046D
+PID = 0xC215
 
 def list_hid_devices():
     """
@@ -18,14 +17,13 @@ def read_joystick_data():
     """
     print(f"\nConnecting to device: VID={hex(VID)}, PID={hex(PID)}")
     try:
-        # Open the HID device
         joystick = hid.device()
         joystick.open(VID, PID)
         print(f"Connected to {joystick.get_product_string()}")
 
         print("Listening for joystick input... Move the stick or press buttons. (Ctrl+C to exit)\n")
         while True:
-            data = joystick.read(64)  # Read 64-byte HID input report
+            data = joystick.read(64)
             if data:
                 print(f"Raw Data: {data}")
     except KeyboardInterrupt:
